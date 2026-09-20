@@ -59,10 +59,19 @@ const utilSvg = {
         for (let ixPoint = 0; ixPoint < oElem.attr.path.length; ixPoint++) {
             let aiPoint = oElem.attr.path[ixPoint];
             let sWayId = sGId + "_" + ixPoint;
+            let isSelected = false;
+            let aixPoints = utilJson.el(oDrawing, "oElemFocus.oMicroFocus.aixPoints");
+            if (aixPoints != null) {
+                isSelected = aixPoints.includes(ixPoint);
+            }
+            /*
+            isSelected = uiG.oData.oMicroFocus.aixPoints.includes(ixPoint);
+            utilJson.el(oDrawing, "oMicroFocus.aixPoints", []);
+            */
             let oWayPoint = {
                 tagType: "rect",
                 id: sWayId,
-                class: "way",
+                class: "way" + (isSelected ? " on" : ""),
                 x: aiPoint[0] - (iWayPointW / 2),
                 y: aiPoint[1] - (iWayPointW / 2),
                 width: iWayPointW,
@@ -106,7 +115,7 @@ const utilSvg = {
         return elemOut;
     },
     clickOnPathPoint: function(uiTrg) {
-debugger;        //circle.setAttribute("onclick", "console.log(\'" + sCircId + "\')");
+        //circle.setAttribute("onclick", "console.log(\'" + sCircId + "\')");
         console.log("clicked on: " + uiTrg.getAttribute("id"));
         let sOwnerId = uiTrg.id.split("_")[1];
         let uiPathOwnerOfThisPoint = svgDrawing.querySelector("#" + sOwnerId);
@@ -137,7 +146,6 @@ debugger;        //circle.setAttribute("onclick", "console.log(\'" + sCircId + "
                     if (uiTrg.isStartPoint || uiTrg.isEndPoint) {
                         console.log("join the two lines\n\t" + uiTrg.sRootId + "\n\t" + oDrawing.oElemFocus.id);
                     } else {
-debugger;
                         console.log("ignore that an element was clicked on.");
                         svgImpl.snap({x: uiTrg.iCX, y: uiTrg.iCY});
                     }
@@ -171,17 +179,21 @@ debugger;
             }
             //if (vToSelect != null) {
                 // Set the focussed element.
-debugger;
-            this.elemFocusSelect(uiTrg);
+            this.elemFocusSelect(uiTrg, event.shiftKey);
             //}
             // Need to turn off any others.
             // Need to add more if alt key is down.
             let uiWayGroup = svgDrawing.querySelector("#" + sWayGroupId);
             let aui = uiWayGroup.querySelectorAll("rect");
             for (let ix = 0; ix < aui.length; ix++) {
+                // Turn them all off.
                 aui[ix].classList.remove("on");
             }
-            uiTrg.classList.add("on");
+            let aixPointsOn = oDrawing.oElemFocus.oMicroFocus.aixPoints;
+            for (let ixPO = 0; ixPO < aixPointsOn.length; ixPO++) {
+                let uiChildOn = uiWayGroup.querySelector("#" + sWayGroupId + "_" + aixPointsOn[ixPO]);
+                uiChildOn.classList.add("on");
+            }
         }
     },
     closePath: function(uiTrg) {
@@ -201,8 +213,7 @@ debugger;
         uiPathOwnerOfThisPoint.style.opacity = "0.2";
         setTimeout(() => {uiPathOwnerOfThisPoint.style.opacity = ""}, 100);
     },
-    elemFocusSelect: function(uiWayClicked) {
-        let sClickedId = uiWayClicked.id;
+    elemFocusSelect: function(uiWayClicked, isShiftKey) {
         /*
         This will need to go back in when different objects exist.
         if (uiWayClicked.getAttribute("class") === "way") {
@@ -210,7 +221,8 @@ debugger;
         */
 
         // We are looking at a child of the way point group.
-        // switch out the point for its parent.
+        let sClickedId = uiWayClicked.id;
+        // Get the parent.
         let sParentId = uiWayClicked.id.substring(0, uiWayClicked.id.lastIndexOf("_"));
         uiParent = svgDrawing.querySelector("#" + sParentId);
         uiWayClicked.classList.remove("off");
@@ -218,9 +230,29 @@ debugger;
         // Now get the actual path, and set that as the current item.
         let sPathId = sClickedId.split("_")[1];
         oDrawing.oElemFocus = oDrawing.oDict[sPathId];
-debugger;
-        oDrawing.oElemFocus.oMicroFocus = {
-            sId: uiWayClicked.id,  // Better??? : getAttribute("id"),
+        //
+        //
+        // TODO: Make sure all way objects have oData.ix
+        // Then go searching for the split/parse etc of the id parts.
+        //
+        // vvvvvvv stop using this notation of splits etc vvvvvvvv
+        let ixNew = parseInt(uiWayClicked.id.split("_").at(-1));
+        aixPointsNew = [ixNew]
+        if (isShiftKey) {
+            let aixPointsOld = utilJson.el(oDrawing, "oElemFocus.oMicroFocus.aixPoints", []);
+            if (aixPointsOld.includes(ixNew)) {
+                // Already there. Remove it.
+                aixPointsNew = utilJson.removeFromArray(aixPointsOld, ixNew);
+            } else {
+                // Add the new one.
+                // aixPointsNew = [...aixPointsNew, ...aixPointsOld];
+                aixPointsOld.push(ixNew);
+                aixPointsNew = aixPointsOld;
+            }
+        }
+       oDrawing.oElemFocus.oMicroFocus = {
+            sId: uiWayClicked.id,
+            aixPoints: aixPointsNew,
             sParentId: sParentId
         };
     },
@@ -228,6 +260,10 @@ debugger;
         let uiTrg = svgDrawing.querySelector("#g_" + oDrawing.oElemFocus.id);
         uiTrg.classList.remove("on");
         uiTrg.classList.add("off");
+        let auiWays = uiTrg.querySelectorAll("rect")
+        for (let ixW = 0; ixW < auiWays.length; ixW++) {
+            auiWays[ixW].classList.remove("on");
+        }
         oDrawing.oElemFocus = null;
     }
 }

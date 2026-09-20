@@ -53,14 +53,47 @@ const utilGeometry = {
         // Translate pRotate to origin (relative to the pAxis)
         const dx = pRotate.x - pAxis.x;
         const dy = pRotate.y - pAxis.y;
+        const pDiff = this.pointMaths(pRotate, "-", pAxis);
+
+        //console.log("old/new values were: " + dx + "/" + pDiff.x + " -- " + dy + "/" + pDiff.y)
+        if ((dx - pDiff.x !== 0) || (dy - pDiff.y !== 0)) {
+            console.error("ERRRRRRRRRRR OOOOOOOO RRRRRRR old/new values were: "
+                + this.round(dx, 2) + "/"
+                + this.round(pDiff.x, 2) + " -- "
+                + this.round(dy,2) + "/"
+                + this.round(pDiff.y, 2)
+            );
+        }
+
         // Apply rotation matrix
         const rotatedX = dx * cos - dy * sin;
         const rotatedY = dx * sin + dy * cos;
         // Translate back to the pAxis position and return new coordinates
-        return {
-            x: pAxis.x + rotatedX,
-            y: pAxis.y + rotatedY
-        };
+        return this.toPoint(
+            this.round(pAxis.x + rotatedX, 1),
+            this.round(pAxis.y + rotatedY, 1)
+        );
+    },
+    pointMaths: function(pIn, sOperation, vFactor) {
+        if (sOperation === "*") {
+            return this.toPoint((pIn.x * vFactor), (pIn.y * vFactor));
+        } else if (["+","-"].includes(sOperation)) {
+            if (typeof vFactor === "number") {
+                vFactor = this.toPoint(vFactor); // Turn it into a point.
+            }
+            let iPosNeg = (sOperation === "+") ? 1 : -1
+            return this.toPoint(
+                (pIn.x + (vFactor.x * iPosNeg)),
+                (pIn.y + (vFactor.y * iPosNeg))
+            );
+        }
+        return pIn;
+    },
+    round: function(fIn, iDigits=0) {
+        if (iDigits === 0) {
+            return Math.round(fIn);
+        }
+        return Math.round(fIn * (10 ** iDigits)) / (10 ** iDigits);
     }
     /*
     good but I don't think it is needed.

@@ -20,7 +20,6 @@ svgImpl = {
                 let iX = Math.round(svgCoords.x);
                 let iY = Math.round(svgCoords.y) - 4; // Always looks like it is too low.
                 if (this.snapData !== null) {
-debugger;
                     iX = this.snapData.x;
                     iY = this.snapData.y;
                     this.snapData = null;
@@ -65,6 +64,28 @@ debugger;
                 // Your code here
                 console.log('The Delete key was pressed.');
                 svgImpl.deleteElemFocus();
+            } else if (event.key.startsWith('Arrow')) {
+                event.preventDefault();
+                let pOut = {x: 0, y: 0};
+                switch (event.key) {
+                    case 'ArrowRight':
+                        pOut.x = 1;
+                        break;
+                    case 'ArrowLeft':
+                        pOut.x = -1;
+                        break;
+                    case 'ArrowDown':
+                        pOut.y = 1;
+                        break;
+                    case 'ArrowUp':
+                        pOut.y = -1;
+                        break;
+                }
+                let iFactor = event.shiftKey ? 10 : 1;
+                //pOut.x *= iFactor;
+                //pOut.y *= iFactor;
+                pOut = utilGeometry.pointMaths(pOut, "*", iFactor)
+                svgImpl.moveElemFocus(pOut);
             }
         });
         return this;
@@ -84,16 +105,31 @@ debugger;
     },
     snapData: null,
     deleteElemFocus: function() {
-debugger;
+        this.editElemFocus({
+            sOperation: "delete"
+        })
+    },
+    moveElemFocus: function(pDistance) {
+        this.editElemFocus({
+            sOperation: "move",
+            pDistance: pDistance
+        });
+    },
+    editElemFocus: function(oInstruction) {
         // Needs a test to make sure it is a way when other elems are added.
         let oMicro = utilJson.el(oDrawing.oElemFocus, "oMicroFocus");
         if (oMicro != null) {
             let oParentData = svgDrawing.querySelector("#" + oDrawing.oElemFocus.oMicroFocus.sParentId).oData;
-            let ixPointToRemove = parseInt(oMicro.sId.split("_").at(-1));
+            //let ixPointToRemove = parseInt(oMicro.sId.split("_").at(-1));
             let apNew = [];
             for (let ixP = 0; ixP < oParentData.attr.path.length; ixP++) {
-                if (ixPointToRemove === ixP) {
-                    continue;
+                if (oMicro.aixPoints.includes(ixP)) {
+                    if (oInstruction.sOperation === "delete") {
+                        continue;
+                    } else if (oInstruction.sOperation === "move") {
+                        oParentData.attr.path[ixP][0] += oInstruction.pDistance.x;
+                        oParentData.attr.path[ixP][1] += oInstruction.pDistance.y;
+                    }
                 }
                 apNew.push(oParentData.attr.path[ixP]);
             }

@@ -51,7 +51,7 @@ canv #drawingSvg {
     stroke-width: 4;
 }
 g[role="wayGroup"].off rect {
-    opacity: 0.7;
+    opacity: 0.3;
     stroke: silver;
 }
 g[role="wayGroup"].off:hover rect {
@@ -60,4 +60,5 @@ g[role="wayGroup"].off:hover rect {
 }
 g[role="wayGroup"] rect.on {
     fill: red;
+    opacity: 1.0;
 }
