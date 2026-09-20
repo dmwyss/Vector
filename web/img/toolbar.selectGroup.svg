@@ -1,0 +1,8 @@
+<svg viewBox="0 0 30 30" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Main Cursor Path -->
+<path d="M2.5 2V22.5L7.8 16.9L13 26.5L17 24.5L12.1 15.1L19.5 15.1L2.5 2Z"
+fill="#CCC"
+stroke="#CCC"
+stroke-width="1.5"
+stroke-linejoin="round" />
+</svg>

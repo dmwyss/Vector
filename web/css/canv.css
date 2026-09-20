@@ -1,0 +1,63 @@
+:root {
+    --color-bg-ruler: #1118;
+}
+svg {
+    overflow:visible;
+}
+#canv .outer-div {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000; /* Dunkelblau aus dem vorherigen Schritt */
+}
+#canv .rulerH {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background-color: var(--color-bg-ruler);
+}
+#canv .rulerV {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background-color: var(--color-bg-ruler);
+    XXXborder-right: 1px solid #8882;
+}
+#canv .drawing {
+    border: 1px solid #333;
+    position: absolute;
+    top: 20px;    /* Startet direkt unter der Top-Bar */
+    left: 20px;   /* Startet direkt rechts neben der Left-Bar */
+    right: 0;     /* Geht bis ganz nach rechts */
+    bottom: 0;    /* Geht bis ganz nach unten */
+    background-color: #000; /* Dunklerer Hintergrund für den Inhalt */
+    padding: 0px;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+canv #drawingSvg {
+    XXXwidth: 100%;
+    XXXheight: auto;
+    display: block;
+    cursor: crosshair;
+}
+.way:hover {
+    fill: orange;
+    stroke: orange;
+    stroke-width: 4;
+}
+g[role="wayGroup"].off rect {
+    opacity: 0.7;
+    stroke: silver;
+}
+g[role="wayGroup"].off:hover rect {
+    opacity: 1.0;
+    stroke: lime;
+}
+g[role="wayGroup"] rect.on {
+    fill: red;
+}
