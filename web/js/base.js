@@ -8,4 +8,8 @@ function doOnLoad() {
     uiState.init();
     svgImpl.init();
     utilModal.init();
+    try {
+        // Library not loaded right now.
+        //dragAndDrop.init();
+    } catch (e) {}
 }

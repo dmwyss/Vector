@@ -45,20 +45,20 @@ canv #drawingSvg {
     display: block;
     cursor: crosshair;
 }
-.way:hover {
+.tween:hover {
     fill: orange;
     stroke: orange;
     stroke-width: 4;
 }
-g[role="wayGroup"].off rect {
+g[role="tweenGroup"].off rect {
     opacity: 0.3;
     stroke: silver;
 }
-g[role="wayGroup"].off:hover rect {
+g[role="tweenGroup"].off:hover rect {
     opacity: 1.0;
     stroke: lime;
 }
-g[role="wayGroup"] rect.on {
+g[role="tweenGroup"] rect.on {
     fill: red;
     opacity: 1.0;
 }

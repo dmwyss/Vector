@@ -1,6 +1,6 @@
 const tools = {
     selectGroup: "selectGroup",
-    selectDirect: "selectWay",
+    selectDirect: "selectTween",
     pen: "pen"
 }
 const uiState = {

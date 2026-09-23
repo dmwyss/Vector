@@ -56,7 +56,6 @@ svgImpl = {
                 utilSvg.addPathPoint(oDrawing.oElemFocus, iX, iY);
                 utilSvg.redrawElem(oDrawing.oElemFocus);
             } else {
-
             }
         });
         document.addEventListener('keydown', function(event) {
@@ -67,25 +66,22 @@ svgImpl = {
             } else if (event.key.startsWith('Arrow')) {
                 event.preventDefault();
                 let pOut = {x: 0, y: 0};
+                let iFactor = event.shiftKey ? 10 : 1;
                 switch (event.key) {
                     case 'ArrowRight':
-                        pOut.x = 1;
+                        pOut.x = 1 * iFactor;
                         break;
                     case 'ArrowLeft':
-                        pOut.x = -1;
+                        pOut.x = -1 * iFactor;
                         break;
                     case 'ArrowDown':
-                        pOut.y = 1;
+                        pOut.y = 1 * iFactor;
                         break;
                     case 'ArrowUp':
-                        pOut.y = -1;
+                        pOut.y = -1 * iFactor;
                         break;
                 }
-                let iFactor = event.shiftKey ? 10 : 1;
-                //pOut.x *= iFactor;
-                //pOut.y *= iFactor;
-                pOut = utilGeometry.pointMaths(pOut, "*", iFactor)
-                svgImpl.moveElemFocus(pOut);
+                svgImpl.setElemFocusPosRel(pOut);
             }
         });
         return this;
@@ -109,33 +105,68 @@ svgImpl = {
             sOperation: "delete"
         })
     },
-    moveElemFocus: function(pDistance) {
+    setElemFocusPosRel: function(pDistance) {
         this.editElemFocus({
-            sOperation: "move",
+            sOperation: "setRel",
+            pDistance: pDistance
+        });
+    },
+    setElemFocusPosAbs: function(pDistance) {
+        this.editElemFocus({
+            sOperation: "setAbs",
             pDistance: pDistance
         });
     },
     editElemFocus: function(oInstruction) {
-        // Needs a test to make sure it is a way when other elems are added.
+        // Needs a test to make sure it is a tween when other elems are added.
         let oMicro = utilJson.el(oDrawing.oElemFocus, "oMicroFocus");
         if (oMicro != null) {
-            let oParentData = svgDrawing.querySelector("#" + oDrawing.oElemFocus.oMicroFocus.sParentId).oData;
-            //let ixPointToRemove = parseInt(oMicro.sId.split("_").at(-1));
+            let uiParentElem = svgDrawing.querySelector("#" + oDrawing.oElemFocus.oMicroFocus.sParentId);
+            let oParentData = uiParentElem.oData;
             let apNew = [];
             for (let ixP = 0; ixP < oParentData.attr.path.length; ixP++) {
                 if (oMicro.aixPoints.includes(ixP)) {
                     if (oInstruction.sOperation === "delete") {
+                        // Tween not to be updated. Omit it from list.
                         continue;
-                    } else if (oInstruction.sOperation === "move") {
+                    } else if (oInstruction.sOperation === "setRel") {
                         oParentData.attr.path[ixP][0] += oInstruction.pDistance.x;
                         oParentData.attr.path[ixP][1] += oInstruction.pDistance.y;
+                    } else if (oInstruction.sOperation === "setAbs") {
+                        oParentData.attr.path[ixP][0] = oInstruction.pDistance.x;
+                        oParentData.attr.path[ixP][1] = oInstruction.pDistance.y;
                     }
                 }
                 apNew.push(oParentData.attr.path[ixP]);
             }
-            oParentData.attr.path = apNew;
-            utilSvg.redrawElem(oParentData);
+            if (apNew.length === 0) {
+debugger;
+                // Probably because delete was used. No child points.
+                // Delete parent.
+                /*
+                uiParentElem.parentNode.removeChild(uiParentElem);
+                uiPath.parentNode.removeChild(uiPath);
+                //let uiPath = svgDrawing.querySelector("#" + oDrawing.oElemFocus.id);
+                */
+                this.removeUiElement(uiParentElem);
+                this.removeUiElement("#" + oDrawing.oElemFocus.id);
+                this.removeUiElement(uiPath);
+                delete oDrawing.oDict[oParentData.id];
+            } else {
+                oParentData.attr.path = apNew;
+                utilSvg.redrawElem(oParentData);
+            }
         } else {
         }
+    },
+    removeUiElement: function(uiElem) {
+        // Supply:
+        // svgObject
+        // or
+        // string : id of one in the svgDrawing.
+        if (typeof uiElem === "string") {
+            uiElem = svgDrawing.querySelector("#" + oDrawing.oElemFocus.id);
+        }
+        uiElem.parentNode.removeChild(uiElem);
     }
 }
